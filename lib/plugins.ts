@@ -25,6 +25,13 @@ export interface Plugin {
   /** Slug used in URLs. Derived from manifest.name or repo name. */
   slug: string;
   manifest: PluginManifest;
+  /** Repo author (the GitHub user/org that owns the repo). */
+  author: {
+    login: string;
+    htmlUrl: string;
+    avatarUrl: string;
+    type: "User" | "Organization";
+  };
   repo: {
     fullName: string; // "Atemndobs/hermes-plugin-credits"
     htmlUrl: string;
@@ -59,6 +66,12 @@ interface SearchRepo {
   topics: string[];
   is_template: boolean;
   default_branch: string;
+  owner: {
+    login: string;
+    html_url: string;
+    avatar_url: string;
+    type: "User" | "Organization";
+  };
 }
 
 async function fetchManifest(repo: SearchRepo): Promise<PluginManifest | null> {
@@ -158,6 +171,12 @@ export async function listPlugins(): Promise<Plugin[]> {
         return {
           slug: m.name || repo.name,
           manifest: m,
+          author: {
+            login: repo.owner.login,
+            htmlUrl: repo.owner.html_url,
+            avatarUrl: repo.owner.avatar_url,
+            type: repo.owner.type,
+          },
           repo: {
             fullName: repo.full_name,
             htmlUrl: repo.html_url,

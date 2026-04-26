@@ -165,13 +165,28 @@ export function PluginGrid({ plugins }: Props) {
               )}
               <div className="flex flex-col gap-2 p-5">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="font-semibold tracking-tight text-zinc-100">
+                  <div className="min-w-0">
+                    <h2 className="truncate font-semibold tracking-tight text-zinc-100">
                       {p.manifest.label || p.slug}
                     </h2>
-                    <p className="mt-1 font-mono text-xs text-zinc-500">
-                      {p.repo.fullName}
-                    </p>
+                    <div className="mt-1.5 flex items-center gap-1.5 text-xs">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={p.author.avatarUrl}
+                        alt=""
+                        loading="lazy"
+                        className="h-4 w-4 shrink-0 rounded-full"
+                      />
+                      <span className="text-zinc-500">by</span>
+                      <span className="truncate font-medium text-zinc-300">
+                        @{p.author.login}
+                      </span>
+                      {p.author.type === "Organization" && (
+                        <span className="rounded bg-zinc-800 px-1 py-px text-[9px] uppercase tracking-wide text-zinc-500">
+                          org
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <span className="shrink-0 text-xs tabular-nums text-zinc-500">
                     ★ {p.repo.stars}

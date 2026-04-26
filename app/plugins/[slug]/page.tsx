@@ -36,10 +36,29 @@ export default async function PluginPage({ params }: Props) {
           ← All plugins
         </Link>
 
-        <div className="mb-6 flex flex-col gap-2">
+        <div className="mb-6 flex flex-col gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">{p.manifest.label}</h1>
+          <a
+            href={p.author.htmlUrl}
+            className="flex w-fit items-center gap-2 text-sm text-zinc-400 hover:text-zinc-100"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={p.author.avatarUrl}
+              alt=""
+              className="h-5 w-5 rounded-full"
+            />
+            <span>
+              by <span className="font-medium text-zinc-200">@{p.author.login}</span>
+            </span>
+            {p.author.type === "Organization" && (
+              <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-zinc-500">
+                org
+              </span>
+            )}
+          </a>
           <p className="font-mono text-xs text-zinc-500">{p.repo.fullName}</p>
-          <p className="mt-2 text-zinc-300">
+          <p className="mt-1 text-zinc-300">
             {p.manifest.description || p.repo.description}
           </p>
         </div>
