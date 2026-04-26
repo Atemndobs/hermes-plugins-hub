@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SiteNav } from "../components/site-nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hermes Plugins · Community directory for Hermes Agent",
+  title: "Atem's Agent OS",
   description:
-    "Browse, install, and publish plugins for Hermes Agent. Auto-indexed from the GitHub topic 'hermes-plugin'.",
+    "Building a personal agent operating system on top of Hermes, Claude Code, and the harnesses I've collected. Plugins, notes, stack, journey.",
 };
 
 export default function RootLayout({
@@ -28,7 +29,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100">
+        <SiteNav />
+        {children}
+      </body>
     </html>
   );
 }
