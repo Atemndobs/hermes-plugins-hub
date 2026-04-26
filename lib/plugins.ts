@@ -174,7 +174,20 @@ export async function listPlugins(): Promise<Plugin[]> {
       }),
   );
 
-  return plugins.filter((p): p is Plugin => p !== null);
+  // Sort: plugins with screenshots first (visual variety on the home page),
+  // then by stars, then by recent update.
+  return plugins
+    .filter((p): p is Plugin => p !== null)
+    .sort((a, b) => {
+      const av = a.screenshots.length > 0 ? 1 : 0;
+      const bv = b.screenshots.length > 0 ? 1 : 0;
+      if (av !== bv) return bv - av;
+      if (a.repo.stars !== b.repo.stars) return b.repo.stars - a.repo.stars;
+      return (
+        new Date(b.repo.updatedAt).getTime() -
+        new Date(a.repo.updatedAt).getTime()
+      );
+    });
 }
 
 export async function getPlugin(slug: string): Promise<Plugin | null> {
