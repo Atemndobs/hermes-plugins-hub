@@ -44,6 +44,21 @@ export default async function PluginPage({ params }: Props) {
           </p>
         </div>
 
+        {p.screenshots.length > 0 && (
+          <section className="mb-8 flex flex-col gap-3">
+            {p.screenshots.map((url) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={url}
+                src={url}
+                alt={`${p.manifest.label} screenshot`}
+                loading="lazy"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-950"
+              />
+            ))}
+          </section>
+        )}
+
         <section className="mb-8">
           <h2 className="mb-2 text-sm font-medium uppercase tracking-wide text-zinc-500">
             Install

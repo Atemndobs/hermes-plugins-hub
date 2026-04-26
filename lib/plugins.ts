@@ -35,6 +35,8 @@ export interface Plugin {
     topics: string[];
     isTemplate: boolean;
   };
+  /** Absolute URLs to screenshots auto-discovered in the repo. */
+  screenshots: string[];
   readme: string | null;
 }
 
@@ -70,6 +72,51 @@ async function fetchManifest(repo: SearchRepo): Promise<PluginManifest | null> {
   }
 }
 
+interface GitTreeEntry {
+  path: string;
+  type: "blob" | "tree";
+}
+
+/**
+ * Find every PNG/JPG/WebP at the repo root, in /screenshots/, or in
+ * /dashboard/ (the convention is `screenshot.png` or `screenshots/*.png`).
+ * Returns absolute raw.githubusercontent URLs.
+ */
+async function fetchScreenshots(repo: SearchRepo): Promise<string[]> {
+  try {
+    const r = await fetch(
+      `${GH}/repos/${repo.full_name}/git/trees/${repo.default_branch}?recursive=1`,
+      { headers, next: { revalidate: 3600 } },
+    );
+    if (!r.ok) return [];
+    const data = (await r.json()) as { tree?: GitTreeEntry[] };
+    const tree = data.tree ?? [];
+    const isImage = (p: string) => /\.(png|jpe?g|webp|gif)$/i.test(p);
+    const wanted = tree.filter((e) => {
+      if (e.type !== "blob" || !isImage(e.path)) return false;
+      const p = e.path.toLowerCase();
+      // Avoid logos / icons / favicons.
+      if (/(^|\/)(logo|icon|favicon|apple-touch)/.test(p)) return false;
+      return (
+        p.startsWith("screenshot") ||
+        p.startsWith("screenshots/") ||
+        p.startsWith("dashboard/screenshot") ||
+        p.startsWith("dashboard/screenshots/") ||
+        p.startsWith("docs/screenshots/") ||
+        p.startsWith(".github/screenshots/")
+      );
+    });
+    return wanted
+      .slice(0, 6)
+      .map(
+        (e) =>
+          `https://raw.githubusercontent.com/${repo.full_name}/${repo.default_branch}/${e.path}`,
+      );
+  } catch {
+    return [];
+  }
+}
+
 async function fetchReadme(repo: SearchRepo): Promise<string | null> {
   try {
     const r = await fetch(`${GH}/repos/${repo.full_name}/readme`, {
@@ -99,9 +146,10 @@ export async function listPlugins(): Promise<Plugin[]> {
       // Skip templates from the listing — they're scaffolds, not plugins.
       .filter((repo) => !repo.is_template && !repo.topics.includes("template"))
       .map(async (repo): Promise<Plugin | null> => {
-        const manifest = await fetchManifest(repo);
-        // No manifest = malformed plugin. Skip with a fallback name so the
-        // list still works for plugins under construction.
+        const [manifest, screenshots] = await Promise.all([
+          fetchManifest(repo),
+          fetchScreenshots(repo),
+        ]);
         const m: PluginManifest = manifest ?? {
           name: repo.name,
           label: repo.name,
@@ -120,6 +168,7 @@ export async function listPlugins(): Promise<Plugin[]> {
             topics: repo.topics,
             isTemplate: repo.is_template,
           },
+          screenshots,
           readme: null,
         };
       }),

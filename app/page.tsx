@@ -63,30 +63,43 @@ export default async function Home() {
               <Link
                 key={p.slug}
                 href={`/plugins/${p.slug}`}
-                className="group flex flex-col gap-2 rounded-lg border border-zinc-800 bg-zinc-900/40 p-5 transition hover:border-zinc-700 hover:bg-zinc-900"
+                className="group flex flex-col overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/40 transition hover:border-zinc-700 hover:bg-zinc-900"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="font-semibold tracking-tight text-zinc-100">
-                      {p.manifest.label || p.slug}
-                    </h2>
-                    <p className="mt-1 font-mono text-xs text-zinc-500">
-                      {p.repo.fullName}
-                    </p>
+                {p.screenshots[0] && (
+                  <div className="aspect-[16/7] overflow-hidden border-b border-zinc-800/80 bg-zinc-950">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.screenshots[0]}
+                      alt={`${p.manifest.label} preview`}
+                      loading="lazy"
+                      className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.02]"
+                    />
                   </div>
-                  <span className="shrink-0 text-xs tabular-nums text-zinc-500">
-                    ★ {p.repo.stars}
-                  </span>
-                </div>
-                <p className="text-sm text-zinc-400">
-                  {p.manifest.description || p.repo.description || "—"}
-                </p>
-                <div className="mt-1 flex items-center gap-3 text-[11px] text-zinc-600">
-                  {p.manifest.version && <span>v{p.manifest.version}</span>}
-                  <span>updated {relTime(p.repo.updatedAt)}</span>
-                  {(p.manifest.slots ?? []).length > 0 && (
-                    <span>· slots: {(p.manifest.slots ?? []).join(", ")}</span>
-                  )}
+                )}
+                <div className="flex flex-col gap-2 p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h2 className="font-semibold tracking-tight text-zinc-100">
+                        {p.manifest.label || p.slug}
+                      </h2>
+                      <p className="mt-1 font-mono text-xs text-zinc-500">
+                        {p.repo.fullName}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-xs tabular-nums text-zinc-500">
+                      ★ {p.repo.stars}
+                    </span>
+                  </div>
+                  <p className="text-sm text-zinc-400">
+                    {p.manifest.description || p.repo.description || "—"}
+                  </p>
+                  <div className="mt-1 flex items-center gap-3 text-[11px] text-zinc-600">
+                    {p.manifest.version && <span>v{p.manifest.version}</span>}
+                    <span>updated {relTime(p.repo.updatedAt)}</span>
+                    {(p.manifest.slots ?? []).length > 0 && (
+                      <span>· slots: {(p.manifest.slots ?? []).join(", ")}</span>
+                    )}
+                  </div>
                 </div>
               </Link>
             ))}
