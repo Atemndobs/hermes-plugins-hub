@@ -1,65 +1,105 @@
-import Image from "next/image";
+import Link from "next/link";
+import { listPlugins } from "../lib/plugins";
 
-export default function Home() {
+export const revalidate = 3600;
+
+function relTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const d = Math.floor(diff / 86400000);
+  if (d < 1) return "today";
+  if (d < 30) return `${d}d ago`;
+  const m = Math.floor(d / 30);
+  if (m < 12) return `${m}mo ago`;
+  return `${Math.floor(m / 12)}y ago`;
+}
+
+export default async function Home() {
+  const plugins = await listPlugins();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
+    <main className="min-h-screen bg-zinc-950 text-zinc-100">
+      <div className="mx-auto max-w-5xl px-6 py-16">
+        <header className="mb-12 flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">⚕</span>
+            <h1 className="text-3xl font-semibold tracking-tight">
+              Hermes Plugins
+            </h1>
+          </div>
+          <p className="max-w-2xl text-zinc-400">
+            A directory of community plugins for{" "}
             <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              className="underline decoration-zinc-600 underline-offset-4 hover:text-zinc-200"
+              href="https://github.com/NousResearch/hermes-agent"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              Hermes Agent
+            </a>
+            . Each plugin is a self-contained GitHub repo. Install by cloning
+            into <code className="rounded bg-zinc-900 px-1.5 py-0.5 text-xs text-zinc-300">~/.hermes/plugins/</code>.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+          <div className="mt-2 flex flex-wrap gap-3 text-sm">
+            <a
+              href="https://github.com/Atemndobs/hermes-plugin-template"
+              className="rounded-md border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-zinc-300 hover:border-zinc-700 hover:text-zinc-100"
+            >
+              Build your own →
+            </a>
+            <a
+              href="https://github.com/topics/hermes-plugin"
+              className="rounded-md border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-zinc-300 hover:border-zinc-700 hover:text-zinc-100"
+            >
+              Tag your repo <code className="text-xs">hermes-plugin</code> to be listed
+            </a>
+          </div>
+        </header>
+
+        {plugins.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-zinc-800 p-8 text-center text-zinc-500">
+            No plugins found yet. Tag your repo with <code>hermes-plugin</code> on GitHub to appear here.
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {plugins.map((p) => (
+              <Link
+                key={p.slug}
+                href={`/plugins/${p.slug}`}
+                className="group flex flex-col gap-2 rounded-lg border border-zinc-800 bg-zinc-900/40 p-5 transition hover:border-zinc-700 hover:bg-zinc-900"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="font-semibold tracking-tight text-zinc-100">
+                      {p.manifest.label || p.slug}
+                    </h2>
+                    <p className="mt-1 font-mono text-xs text-zinc-500">
+                      {p.repo.fullName}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-xs tabular-nums text-zinc-500">
+                    ★ {p.repo.stars}
+                  </span>
+                </div>
+                <p className="text-sm text-zinc-400">
+                  {p.manifest.description || p.repo.description || "—"}
+                </p>
+                <div className="mt-1 flex items-center gap-3 text-[11px] text-zinc-600">
+                  {p.manifest.version && <span>v{p.manifest.version}</span>}
+                  <span>updated {relTime(p.repo.updatedAt)}</span>
+                  {(p.manifest.slots ?? []).length > 0 && (
+                    <span>· slots: {(p.manifest.slots ?? []).join(", ")}</span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        <footer className="mt-20 border-t border-zinc-900 pt-8 text-xs text-zinc-600">
+          <p>
+            This index auto-updates hourly from the{" "}
+            <code>hermes-plugin</code> GitHub topic. To submit a plugin: tag your repo and ship.
+          </p>
+        </footer>
+      </div>
+    </main>
   );
 }
