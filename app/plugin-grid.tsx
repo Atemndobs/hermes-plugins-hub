@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { categorizePlugin } from "../lib/plugin-categories";
 import type { Plugin } from "../lib/plugins";
 
 function relTime(iso: string): string {
@@ -14,34 +15,6 @@ function relTime(iso: string): string {
   return `${Math.floor(m / 12)}y ago`;
 }
 
-/** Tag plugins with coarse categories from their topics + description text. */
-function categorize(p: Plugin): string[] {
-  const tags = new Set<string>();
-  const haystack = (
-    (p.repo.topics || []).join(" ") +
-    " " +
-    (p.manifest.description || "") +
-    " " +
-    (p.repo.description || "")
-  ).toLowerCase();
-  const rules: [string, RegExp][] = [
-    ["memory", /\bmemor(y|ies)\b|membase|hippo|remnic|persistent\b/],
-    ["search", /\bsearch\b|brave|tavily|firecrawl|exa\b/],
-    ["ui", /\bui\b|dashboard|skin|theme|visual|animation|widget/],
-    ["analytics", /analytic|cost|credit|quota|usage|telemetry/],
-    ["automation", /workflow|automation|cron|schedule|runbook/],
-    ["safety", /safety|guard|airlock|verifier|checkpoint/],
-    ["social", /social|telegram|discord|whatsapp|slack/],
-    ["coding", /code|ast|tree-sitter|refactor|lsp/],
-    ["food", /meal|recipe|food|fridge|kitchen/],
-    ["time", /time|clock|klokkan|cron/],
-  ];
-  for (const [tag, re] of rules) {
-    if (re.test(haystack)) tags.add(tag);
-  }
-  return [...tags];
-}
-
 interface Props {
   plugins: Plugin[];
 }
@@ -51,7 +24,7 @@ export function PluginGrid({ plugins }: Props) {
   const [activeTag, setActiveTag] = useState<string | null>(null);
 
   const enriched = useMemo(
-    () => plugins.map((p) => ({ ...p, _tags: categorize(p) })),
+    () => plugins.map((p) => ({ ...p, _tags: categorizePlugin(p) })),
     [plugins],
   );
 
